@@ -1,0 +1,171 @@
+<div class="grid">
+    <div class="col-12">
+        <div class="driverd px-6 py-6">
+            <p-toast></p-toast>
+            <p-toolbar styleClass="mb-4">
+                <ng-template pTemplate="left">
+                    <div class="my-2">
+                        <button pButton pRipple label="New" icon="pi pi-plus" class="p-button-success mr-2" (click)="openNew()"></button>
+                        <button pButton pRipple label="Delete" icon="pi pi-trash" class="p-button-danger" (click)="deleteSelecteddrivers()" [disabled]="!selecteddrivers "></button>
+                    </div>
+                </ng-template>
+
+                <ng-template pTemplate="right">
+                    <p-fileUpload mode="basic" accept="image/*" [maxFileSize]="1000000" label="Import" chooseLabel="Import" class="mr-2 inline-block"></p-fileUpload>
+                    <button pButton pRipple label="Export" icon="pi pi-upload" class="p-button-help" (click)="dt.exportCSV()"></button>
+                </ng-template>
+            </p-toolbar>
+
+            <p-table #dt [value]="drivers" [columns]="cols" responsiveLayout="scroll" [rows]="10" [globalFilterFields]="['name','country.name','representative.name','status']" [rows]="10" [paginator]="true" [rowsPerPageOptions]="[10,20,30]" [showCurrentPageReport]="true" currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries" [(selection)]="selecteddrivers" selectionMode="multiple" [rowHover]="true" dataKey="id">
+                <ng-template pTemplate="caption">
+                    <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
+                        <h5 class="m-0">Manage drivers</h5>
+                        <span class="block mt-2 md:mt-0 p-input-icon-left">
+                            <i class="pi pi-search"></i>
+                            <input pInputText type="text" (input)="onGlobalFilter(dt, $event)" placeholder="Search..."  class="w-full sm:w-auto"/>
+                        </span>
+                    </div>
+                </ng-template>
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th style="width: 3rem">
+                            <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
+                        </th>
+                        <th pSortableColumn="code">Code <p-sortIcon field="code"></p-sortIcon></th>
+                        <th pSortableColumn="name">name <p-sortIcon field="name"></p-sortIcon></th>
+                        <th>Image</th>
+                        <th pSortableColumn="mail">mail <p-sortIcon field="mail"></p-sortIcon></th>
+                        <th pSortableColumn="model">model <p-sortIcon field="model"></p-sortIcon></th>
+                        <th pSortableColumn="rating">Reviews <p-sortIcon field="rating"></p-sortIcon></th>
+                        <th pSortableColumn="year">Status <p-sortIcon field="year"></p-sortIcon></th>
+                        <th></th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-driver>
+                    <tr>
+                        <td>
+                            <p-tableCheckbox [value]="driver"></p-tableCheckbox>
+                        </td>
+                        <td style="width:14%; min-width:10rem;"><span class="p-column-title">Code</span>
+                            {{driver.id || driver.id}}
+                        </td>
+                        <td style="width:14%; min-width:10rem;">
+                            <span class="p-column-title">name</span>
+                            {{driver.name}}
+                        </td>
+                        <td style="width:14%; min-width:10rem;"><span class="p-column-title">Image</span>
+                            <img [src]="'assets/demo/images/driver/' + driver.drivingPhoto" [alt]="driver.name" width="100" class="shadow-4" />
+                        </td>
+                        <td style="width:14%; min-width:8rem;">
+                            <span class="p-column-title">mail</span>
+                            {{driver.mail}}
+                        </td>
+                        <td style="width:14%; min-width:10rem;">
+                            <span class="p-column-title">phone</span>
+                            {{driver.phone}}
+                        </td>
+                        <td style="width:14%; min-width: 10rem;"><span class="p-column-title">Reviews</span>
+                            <p-rating [ngModel]="driver.rating" [readonly]="true" [cancel]="false"></p-rating>
+                        </td>
+                        <!-- <td style="width:14%; min-width: 10rem;"><span class="p-column-title">Status</span>
+                            <span [class]="'driver-badge status-' + (driver.year ? driver.year.toLowerCase() : '')">{{driver.year}}</span>
+                        </td> -->
+                        <td>
+                            <div class="flex">
+                                <button pButton pRipple icon="pi pi-pencil" class="p-button-rounded p-button-success mr-2" (click)="editdriver(driver)"></button>
+                                <button pButton pRipple icon="pi pi-trash" class="p-button-rounded p-button-warning" (click)="deletedriver(driver)"></button>
+                            </div>
+                        </td>
+                    </tr>
+                </ng-template>
+            </p-table>
+        </div>
+
+        <p-dialog [(visible)]="driverDialog" [style]="{width: '450px'}" header="driver Details" [modal]="true" class="p-fluid">
+            <ng-template pTemplate="content">
+                <img [src]="'assets/demo/images/driver/' + driver.drivingPhoto" [alt]="driver.drivingPhoto" width="150" class="mt-0 mx-auto mb-5 block shadow-2" *ngIf="driver.drivingPhoto">
+                <div class="field">
+                    <label for="name">name</label>
+                    <input type="text" pInputText id="name" [(ngModel)]="driver.name" required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !driver.name}"/>
+                    <small class="ng-dirty ng-invalid" *ngIf="submitted && !driver.name">name is required.</small>
+                </div>
+                <div class="field">
+                    <label for="address">address</label>
+                    <textarea id="address" pInputTextarea [(ngModel)]="driver.address" required rows="3" cols="20"></textarea>
+                </div>
+
+                <!-- <div class="field">
+                    <label for="year">year Status</label>
+                    <p-dropdown [(ngModel)]="driver.year" inputId="year" optionValue="label" [options]="year" placeholder="Select">
+                        <ng-template pTemplate="selectedItem">
+                            <span *ngIf="driver && driver.year" [class]="'driver-badge status-' + driver.year.toString().toLowerCase()">{{driver.year}}</span>
+                        </ng-template>
+                        <ng-template let-option pTemplate="item">
+                            <span [class]="'driver-badge status-' + option.value">{{option.label}}</span>
+                        </ng-template>
+                    </p-dropdown>
+                </div> -->
+
+                <div class="field">
+                    <label class="mb-3">model</label>
+                    <div class="formgrid grid">
+                        <div class="field-radiobutton col-6">
+                            <p-radioButton id="model1" name="state" value="Peugeot" [(ngModel)]="driver.state"></p-radioButton>
+                            <label for="model1">Peugeot</label>
+                        </div>
+                        <div class="field-radiobutton col-6">
+                            <p-radioButton id="model2" name="state" value="Volkswagen" [(ngModel)]="driver.state"></p-radioButton>
+                            <label for="model2">Volkswagen</label>
+                        </div>
+                        <div class="field-radiobutton col-6">
+                            <p-radioButton id="model3" name="state" value="Toyota" [(ngModel)]="driver.state"></p-radioButton>
+                            <label for="model3">Volkswagen</label>
+                        </div>
+                        <div class="field-radiobutton col-6">
+                            <p-radioButton id="model4" name="state" value="Hyundai" [(ngModel)]="driver.state"></p-radioButton>
+                            <label for="model4">Hyundai</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="formgrid grid">
+                    <div class="field col">
+                        <label for="mail">mail</label>
+                        <input type="text" pInputText id="mail" [(ngModel)]="driver.mail" >
+                    </div>
+                    <div class="field col">
+                        <label for="phone">phone</label>
+                        <input type="text" pInputText id="phone" [(ngModel)]="driver.phone">
+                    </div>
+                </div>
+            </ng-template>
+
+            <ng-template pTemplate="footer">
+                <button pButton pRipple label="Cancel" icon="pi pi-times" class="p-button-text" (click)="hideDialog()"></button>
+                <button pButton pRipple label="Save" icon="pi pi-check" class="p-button-text" (click)="savedriver()"></button>
+            </ng-template>
+        </p-dialog>
+
+         <p-dialog [(visible)]="deletedriverDialog" header="Confirm" [modal]="true" [style]="{width:'450px'}">
+            <div class="flex align-items-center justify-content-center">
+                <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem"></i>
+                <span *ngIf="driver">Are you sure you want to delete <b>{{driver.name}}</b>?</span>
+            </div>
+            <ng-template pTemplate="footer">
+                <button pButton pRipple icon="pi pi-times" class="p-button-text" label="No" (click)="deletedriverDialog = false"></button>
+                <button pButton pRipple icon="pi pi-check" class="p-button-text" label="Yes" (click)="confirmDelete()"></button>
+            </ng-template>
+        </p-dialog>
+
+        <p-dialog [(visible)]="deletedriversDialog" header="Confirm" [modal]="true" [style]="{width:'450px'}">
+            <div class="flex align-items-center justify-content-center">
+                <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem"></i>
+                <span>Are you sure you want to delete selected drivers?</span>
+            </div>
+            <ng-template pTemplate="footer">
+                <button pButton pRipple icon="pi pi-times" class="p-button-text" label="No" (click)="deletedriversDialog = false"></button>
+                <button pButton pRipple icon="pi pi-check" class="p-button-text" label="Yes" (click)="confirmDeleteSelected()"></button>
+            </ng-template>
+        </p-dialog> 
+    </div>
+</div>

@@ -1,0 +1,171 @@
+<div class="grid">
+    <div class="col-12">
+        <div class="card px-6 py-6">
+            <p-toast></p-toast>
+            <p-toolbar styleClass="mb-4">
+                <ng-template pTemplate="left">
+                    <div class="my-2">
+                        <button pButton pRipple label="New" icon="pi pi-plus" class="p-button-success mr-2" (click)="openNew()"></button>
+                        <button pButton pRipple label="Delete" icon="pi pi-trash" class="p-button-danger" (click)="deleteSelectedcars()" [disabled]="!selectedcars "></button>
+                    </div>
+                </ng-template>
+
+                <ng-template pTemplate="right">
+                    <p-fileUpload mode="basic" accept="image/*" [maxFileSize]="1000000" label="Import" chooseLabel="Import" class="mr-2 inline-block"></p-fileUpload>
+                    <button pButton pRipple label="Export" icon="pi pi-upload" class="p-button-help" (click)="dt.exportCSV()"></button>
+                </ng-template>
+            </p-toolbar>
+
+            <p-table #dt [value]="cars" [columns]="cols" responsiveLayout="scroll" [rows]="10" [globalFilterFields]="['brand','country.brand','representative.brand','status']" [rows]="10" [paginator]="true" [rowsPerPageOptions]="[10,20,30]" [showCurrentPageReport]="true" currentPageReportTemplate="Showing {first} to {last} of {totalRecords} entries" [(selection)]="selectedcars" selectionMode="multiple" [rowHover]="true" dataKey="id">
+                <ng-template pTemplate="caption">
+                    <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
+                        <h5 class="m-0">Manage cars</h5>
+                        <span class="block mt-2 md:mt-0 p-input-icon-left">
+                            <i class="pi pi-search"></i>
+                            <input pInputText type="text" (input)="onGlobalFilter(dt, $event)" placeholder="Search..."  class="w-full sm:w-auto"/>
+                        </span>
+                    </div>
+                </ng-template>
+                <ng-template pTemplate="header">
+                    <tr>
+                        <th style="width: 3rem">
+                            <p-tableHeaderCheckbox></p-tableHeaderCheckbox>
+                        </th>
+                        <th pSortableColumn="code">Code <p-sortIcon field="code"></p-sortIcon></th>
+                        <th pSortableColumn="brand">brand <p-sortIcon field="brand"></p-sortIcon></th>
+                        <th>Image</th>
+                        <th pSortableColumn="trunkCapacity">trunkCapacity <p-sortIcon field="trunkCapacity"></p-sortIcon></th>
+                        <th pSortableColumn="model">model <p-sortIcon field="model"></p-sortIcon></th>
+                        <th pSortableColumn="rating">Reviews <p-sortIcon field="rating"></p-sortIcon></th>
+                        <th pSortableColumn="year">Status <p-sortIcon field="year"></p-sortIcon></th>
+                        <th></th>
+                    </tr>
+                </ng-template>
+                <ng-template pTemplate="body" let-car>
+                    <tr>
+                        <td>
+                            <p-tableCheckbox [value]="car"></p-tableCheckbox>
+                        </td>
+                        <td style="width:14%; min-width:10rem;"><span class="p-column-title">Code</span>
+                            {{car.id || car.id}}
+                        </td>
+                        <td style="width:14%; min-width:10rem;">
+                            <span class="p-column-title">brand</span>
+                            {{car.brand}}
+                        </td>
+                        <td style="width:14%; min-width:10rem;"><span class="p-column-title">Image</span>
+                            <img [src]="'assets/demo/images/car/' + car.image" [alt]="car.brand" width="100" class="shadow-4" />
+                        </td>
+                        <td style="width:14%; min-width:8rem;">
+                            <span class="p-column-title">trunkCapacity</span>
+                            {{car.trunkCapacity | currency:'USD'}}
+                        </td>
+                        <td style="width:14%; min-width:10rem;">
+                            <span class="p-column-title">model</span>
+                            {{car.model}}
+                        </td>
+                        <td style="width:14%; min-width: 10rem;"><span class="p-column-title">Reviews</span>
+                            <p-rating [ngModel]="car.rating" [readonly]="true" [cancel]="false"></p-rating>
+                        </td>
+                        <!-- <td style="width:14%; min-width: 10rem;"><span class="p-column-title">Status</span>
+                            <span [class]="'car-badge status-' + (car.year ? car.year.toLowerCase() : '')">{{car.year}}</span>
+                        </td> -->
+                        <td>
+                            <div class="flex">
+                                <button pButton pRipple icon="pi pi-pencil" class="p-button-rounded p-button-success mr-2" (click)="editcar(car)"></button>
+                                <button pButton pRipple icon="pi pi-trash" class="p-button-rounded p-button-warning" (click)="deletecar(car)"></button>
+                            </div>
+                        </td>
+                    </tr>
+                </ng-template>
+            </p-table>
+        </div>
+
+        <p-dialog [(visible)]="carDialog" [style]="{width: '450px'}" header="car Details" [modal]="true" class="p-fluid">
+            <ng-template pTemplate="content">
+                <img [src]="'assets/demo/images/car/' + car.imageUrl" [alt]="car.imageUrl" width="150" class="mt-0 mx-auto mb-5 block shadow-2" *ngIf="car.imageUrl">
+                <div class="field">
+                    <label for="brand">brand</label>
+                    <input type="text" pInputText id="brand" [(ngModel)]="car.brand" required autofocus [ngClass]="{'ng-invalid ng-dirty' : submitted && !car.brand}"/>
+                    <small class="ng-dirty ng-invalid" *ngIf="submitted && !car.brand">brand is required.</small>
+                </div>
+                <div class="field">
+                    <label for="description">Description</label>
+                    <textarea id="description" pInputTextarea [(ngModel)]="car.description" required rows="3" cols="20"></textarea>
+                </div>
+
+                <!-- <div class="field">
+                    <label for="year">year Status</label>
+                    <p-dropdown [(ngModel)]="car.year" inputId="year" optionValue="label" [options]="year" placeholder="Select">
+                        <ng-template pTemplate="selectedItem">
+                            <span *ngIf="car && car.year" [class]="'car-badge status-' + car.year.toString().toLowerCase()">{{car.year}}</span>
+                        </ng-template>
+                        <ng-template let-option pTemplate="item">
+                            <span [class]="'car-badge status-' + option.value">{{option.label}}</span>
+                        </ng-template>
+                    </p-dropdown>
+                </div> -->
+
+                <div class="field">
+                    <label class="mb-3">model</label>
+                    <div class="formgrid grid">
+                        <div class="field-radiobutton col-6">
+                            <p-radioButton id="model1" brand="model" value="Peugeot" [(ngModel)]="car.model"></p-radioButton>
+                            <label for="model1">Peugeot</label>
+                        </div>
+                        <div class="field-radiobutton col-6">
+                            <p-radioButton id="model2" brand="model" value="Volkswagen" [(ngModel)]="car.model"></p-radioButton>
+                            <label for="model2">Volkswagen</label>
+                        </div>
+                        <div class="field-radiobutton col-6">
+                            <p-radioButton id="model3" brand="model" value="Toyota" [(ngModel)]="car.model"></p-radioButton>
+                            <label for="model3">Volkswagen</label>
+                        </div>
+                        <div class="field-radiobutton col-6">
+                            <p-radioButton id="model4" brand="model" value="Hyundai" [(ngModel)]="car.model"></p-radioButton>
+                            <label for="model4">Hyundai</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="formgrid grid">
+                    <div class="field col">
+                        <label for="trunkCapacity">trunkCapacity</label>
+                        <p-inputNumber id="trunkCapacity" [(ngModel)]="car.trunkCapacity" mode="currency" currency="USD" locale="en-US"></p-inputNumber>
+                    </div>
+                    <div class="field col">
+                        <label for="seats">seats</label>
+                        <p-inputNumber id="seats" [(ngModel)]="car.seats"></p-inputNumber>
+                    </div>
+                </div>
+            </ng-template>
+
+            <ng-template pTemplate="footer">
+                <button pButton pRipple label="Cancel" icon="pi pi-times" class="p-button-text" (click)="hideDialog()"></button>
+                <button pButton pRipple label="Save" icon="pi pi-check" class="p-button-text" (click)="savecar()"></button>
+            </ng-template>
+        </p-dialog>
+
+         <p-dialog [(visible)]="deleteCarDialog" header="Confirm" [modal]="true" [style]="{width:'450px'}">
+            <div class="flex align-items-center justify-content-center">
+                <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem"></i>
+                <span *ngIf="car">Are you sure you want to delete <b>{{car.brand}}</b>?</span>
+            </div>
+            <ng-template pTemplate="footer">
+                <button pButton pRipple icon="pi pi-times" class="p-button-text" label="No" (click)="deleteCarDialog = false"></button>
+                <button pButton pRipple icon="pi pi-check" class="p-button-text" label="Yes" (click)="confirmDelete()"></button>
+            </ng-template>
+        </p-dialog>
+
+        <p-dialog [(visible)]="deleteCarsDialog" header="Confirm" [modal]="true" [style]="{width:'450px'}">
+            <div class="flex align-items-center justify-content-center">
+                <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem"></i>
+                <span>Are you sure you want to delete selected cars?</span>
+            </div>
+            <ng-template pTemplate="footer">
+                <button pButton pRipple icon="pi pi-times" class="p-button-text" label="No" (click)="deleteCarsDialog = false"></button>
+                <button pButton pRipple icon="pi pi-check" class="p-button-text" label="Yes" (click)="confirmDeleteSelected()"></button>
+            </ng-template>
+        </p-dialog> 
+    </div>
+</div>
